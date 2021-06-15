@@ -37,17 +37,18 @@ public class AppleReceiptValidator: ReceiptValidator {
     /// You should always verify your receipt first with the `production` service
     /// Note: will auto change to `.sandbox` and validate again if received a 21007 status code from Apple
     public var service: VerifyReceiptURLType
-
-    private let sharedSecret: String?
+    private let sharedSecret: String
+    private let excludeOldTransactions: Bool
 
     /**
      * Reference Apple Receipt Validator
      *  - Parameter service: Either .production or .sandbox
      *  - Parameter sharedSecret: Only used for receipts that contain auto-renewable subscriptions. Your app’s shared secret (a hexadecimal string).
      */
-    public init(service: VerifyReceiptURLType = .production, sharedSecret: String? = nil) {
+    public init(service: VerifyReceiptURLType = .production, sharedSecret: String = "", excludeOldTransactions: Bool = false) {
 		self.service = service
         self.sharedSecret = sharedSecret
+        self.excludeOldTransactions = excludeOldTransactions
 	}
 
 	public func validate(receiptData: Data, completion: @escaping (VerifyReceiptResult) -> Void) {
@@ -58,10 +59,8 @@ public class AppleReceiptValidator: ReceiptValidator {
 
         let receipt = receiptData.base64EncodedString(options: [])
 		let requestContents: NSMutableDictionary = [ "receipt-data": receipt ]
-		// password if defined
-		if let password = sharedSecret {
-			requestContents.setValue(password, forKey: "password")
-		}
+        requestContents.setValue(self.sharedSecret, forKey: "password")
+        requestContents.setValue(self.excludeOldTransactions, forKey: "exclude-old-transactions")
 
 		// Encore request body
 		do {
