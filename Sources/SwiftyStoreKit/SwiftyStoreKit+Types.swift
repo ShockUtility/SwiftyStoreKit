@@ -170,9 +170,14 @@ public enum VerifyPurchaseResult {
 
 /// Verify subscription result
 public enum VerifySubscriptionResult {
-    case purchased(expiryDate: Date, items: [ReceiptItem])
-    case expired(expiryDate: Date, items: [ReceiptItem])
+    case purchased(result: VerifySubscriptionResultValue)
+    case expired(result: VerifySubscriptionResultValue)
     case notPurchased
+}
+
+public struct VerifySubscriptionResultValue {
+    public let expiryDate: Date
+    public let items: [ReceiptItem]
 }
 
 public enum SubscriptionType: Hashable {
